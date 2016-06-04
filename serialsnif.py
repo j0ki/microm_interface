@@ -7,11 +7,6 @@ import time
 
 verbose = False
 
-def chunks(l, n):
-    """Yield successive n-sized chunks from l."""
-    for i in range(0, len(l), n):
-        yield l[i:i+n]
-
 def crypt_multi(data, key):
   return bytes(a^b for a,b in zip(data,key))
 
@@ -31,11 +26,6 @@ def senddata(ser, packet):
   if verbose:
     print("--> " + blob_to_hex(packet))
   ser.write(packet)
-
-def send_in_chunks(ser, packet):
-  for chunk in chunks(packet, 5):
-    senddata(ser, chunk)
-    time.sleep(0.1)
 
 
 ser = serial.Serial(port=sys.argv[1], baudrate=115200)
