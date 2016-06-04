@@ -88,11 +88,7 @@ command_0_0_2_0 = b'\x8eA\x03\x03#\x03\x00\x01\x01\x01\x01\x01\x01\x01\x01\x01\x
 command_0_0_2_0 = b'\x8eA\x03\x03#\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 
 def swapnibbles(x):
-  #~ print(ord(x)<<4)
-  #~ print((ord(x)<<4)&0xf0)
-  #~ print(ord(x)>>4)
-  #~ print(ord(x))
-  return bytes([ord(x)<<4 & 0xf0 | ord(x)>>4])
+  return bytes([ord(x)<<4 & 0xf0 | ord(x)>>4 & 0x0f])
 
 def command(string):
   cmd = b'\x8eA'
