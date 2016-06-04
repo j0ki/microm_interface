@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-#TODO: optional: remove key exchange from stream
-
 import sys
+
+remove_exchange = len(sys.argv) > 1
 
 def decrypt(data, key):
   return bytes([d ^ key for d in data])
@@ -33,8 +33,11 @@ while True:
     break
   if data[:5] == bytes([0xab, 0xbc, 0xcd, 0xde, 0xea]):
     key = data[12] ^ MASTERKEY
-    output.write(data[:11])
-    data = data[11:]
+    if remove_exchange:
+      data = data[13:]
+    else:
+      output.write(data[:11])
+      data = data[11:]
   else:
     output.write(decrypt(data[:1], key))
     data = data[1:]
