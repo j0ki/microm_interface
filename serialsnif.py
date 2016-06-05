@@ -155,6 +155,19 @@ for i in range(0, 100):
   #~ print("<== " + blob_to_hex(crypt_list_8bit(c_data, key)))
 
 
+time.sleep(0.5)
+
+
+#~ p_standby2 = "8e 67 00 00 00 00 00 00 00 03 13 03 03 12 00 00 00 00"
+
+p_standby2 = "8e 67 00 00 00 00 00 00 00"
+p_standby3 = "03 13 23 03 00 00 00 00 00"
+senddata(ser, crypt_list_8bit(hex_to_blob(p_standby2), key))
+#~ time.sleep(.5)
+#~ senddata(ser, crypt_list_8bit(hex_to_blob(p_standby3), key))
+t = time.localtime()
+senddata(ser, crypt_list_8bit(format_standby_time(t),key))
+
 
 quit()
 #~ time.sleep(.1)
