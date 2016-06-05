@@ -93,7 +93,7 @@ def ascii_to_cmd_string(string):
       cmd += ord(c)
   return cmd
 
-def command(string):
+def cmd_display(string):
   cmd = b'\x8eA'
   if len(string) > 16:
     return b''
@@ -149,8 +149,8 @@ time.sleep(.5)
 
 for i in range(0, 100):
   i = str(i).rjust(4, "0")
-  #~ print(command(i))
-  senddata(ser, crypt_list_8bit(command(i), key))
+  #~ print(cmd_display(i))
+  senddata(ser, crypt_list_8bit(cmd_display(i), key))
   #~ c_data = readdata(ser, 2)
   #~ print("<== " + blob_to_hex(crypt_list_8bit(c_data, key)))
 
