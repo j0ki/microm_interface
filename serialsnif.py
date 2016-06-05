@@ -49,14 +49,14 @@ init_0101 = b'\xab\xbc\xcd\xde\xea\x06\x05\x04\xc0\x10\x00'
 MASTERKEY = bytes((0x0e, 0x0b))
 
 
-key_confirm = b'\x8e\x08'
+cmd_confirm_key = b'\x8e\x08'
 
 
 #~ print(crypt_multi(c_key, p_key))
 
 # command: assert key is valid (or something like that)
 # encrypted by key ( 0x2a )
-c_key_confirm = b'\xa4"'
+c_cmd_confirm_key = b'\xa4"'
 # display: 'boot'
 # encrypted by key ( 0x2a )
 packet1_1 = b'\xa4\xeb\x08\xde\xdem\xbe\xce^*********'
@@ -64,19 +64,19 @@ packet1_1 = b'\xa4\xeb\x08\xde\xdem\xbe\xce^*********'
 
 
 #~ print(decrypt(p_key, 0x2a))
-#~ print(decrypt(p_key_confirm, 0x2a))
+#~ print(decrypt(p_cmd_confirm_key, 0x2a))
 
 #~ quit()
 
 
-command_boot = b'\x8e\xc1"\xf4\xf4G\x94\xe4t\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-command_boot = b'\x8eA"\xf4\xf4G\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+cmd_display_boot = b'\x8e\xc1"\xf4\xf4G\x94\xe4t\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+cmd_display_boot = b'\x8eA"\xf4\xf4G\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 
-command_dash_dash_dash_dash = b'\x8eA\xd3\xd3\xd3\xd3\x00\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01'
-command_dash_dash_dash_dash = b'\x8eA\xd3\xd3\xd3\xd3\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+cmd_display_dash_dash_dash_dash = b'\x8eA\xd3\xd3\xd3\xd3\x00\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01'
+cmd_display_dash_dash_dash_dash = b'\x8eA\xd3\xd3\xd3\xd3\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 
-command_0_0_2_0 = b'\x8eA\x03\x03#\x03\x00\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01'
-command_0_0_2_0 = b'\x8eA\x03\x03#\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+cmd_display_0_0_2_0 = b'\x8eA\x03\x03#\x03\x00\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01'
+cmd_display_0_0_2_0 = b'\x8eA\x03\x03#\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 
 def swapnibbles(x):
   return bytes([ord(x)<<4 & 0xf0 | ord(x)>>4 & 0x0f])
@@ -119,15 +119,15 @@ readdata(ser, 6)
 c_key = crypt_list_8bit(MASTERKEY, key)
 senddata(ser, c_key)
 
-c_key_confirm = crypt_list_8bit(key_confirm, key)
-senddata(ser, c_key_confirm)
+c_cmd_confirm_key = crypt_list_8bit(cmd_confirm_key, key)
+senddata(ser, c_cmd_confirm_key)
 readdata(ser, 3)
 
-senddata(ser, crypt_list_8bit(command_dash_dash_dash_dash, key))
+senddata(ser, crypt_list_8bit(cmd_display_dash_dash_dash_dash, key))
 time.sleep(.5)
-senddata(ser, crypt_list_8bit(command_0_0_2_0, key))
+senddata(ser, crypt_list_8bit(cmd_display_0_0_2_0, key))
 time.sleep(.5)
-senddata(ser, crypt_list_8bit(command_boot, key))
+senddata(ser, crypt_list_8bit(cmd_display_boot, key))
 time.sleep(.5)
 
 for i in range(0, 10000):
