@@ -147,12 +147,12 @@ time.sleep(.5)
 senddata(ser, crypt_list_8bit(cmd_display_boot, key))
 time.sleep(.5)
 
-for i in range(0, 10000):
+for i in range(0, 100):
   i = str(i).rjust(4, "0")
   #~ print(command(i))
   senddata(ser, crypt_list_8bit(command(i), key))
-  c_data = readdata(ser, 2)
-  print("<== " + blob_to_hex(crypt_list_8bit(c_data, key)))
+  #~ c_data = readdata(ser, 2)
+  #~ print("<== " + blob_to_hex(crypt_list_8bit(c_data, key)))
 
 
 
