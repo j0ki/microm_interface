@@ -16,6 +16,9 @@ def crypt_list_8bit(data, key):
 def blob_to_hex(bytestring):
   return " ".join("{:02x}".format(c) for c in bytestring)
 
+def hex_to_blob(asciistring):
+  return bytes([int(x,16) for x in asciistring.split(" ")])
+
 def readdata(ser, n):
   data = ser.read(n)
   if data:
