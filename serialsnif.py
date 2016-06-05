@@ -101,6 +101,15 @@ def command(string):
   cmd = cmd.ljust(18, b'\0')
   return cmd
 
+def format_standby_time(t):
+  h1, h2 = divmod(t.tm_hour, 10)
+  m1, m2 = divmod(t.tm_min, 10)
+  s1, s2 = divmod(t.tm_sec, 10)
+  cmd = ''.join(map(str,[h1,h2,m1,m2,s1,s2]))
+  print(cmd)
+  return ascii_to_cmd_string(cmd).ljust(9, b'\0')
+
+
 init_01 = b'\xab\xbc\xcd\xde\xea\x06\x05\x04\xc0\x10\x00'
 key_01 = 0x01
 
