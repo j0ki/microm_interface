@@ -99,7 +99,7 @@ def ascii_to_cmd_string(string):
   return cmd
 
 def cmd_display(string):
-  cmd = b'\x8eA'
+  cmd = CMD_DISPLAY_PREFIX
   if len(string) > 16:
     return b''
   cmd += ascii_to_cmd_string(string)
