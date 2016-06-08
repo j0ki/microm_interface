@@ -89,6 +89,24 @@ def ascii_to_display(string):
       displaystring += ord(c)
   return displaystring
 
+def hex_list_from_int(number):
+  h, l  = divmod(number, 16)
+  hex_list = [l]
+  if 0 != h:
+    hex_list = hex_list_from_int(h) + hex_list
+  return hex_list
+
+def hexdigit(i):
+  if i < 10:
+    return 16*i + 3 # {0x03..0x93}
+  if i < 16:
+    return 16*(i-9) + 2 #{0x12..0x62}
+  return 0
+
+def hex_to_display(number):
+  displaystring = bytes([ hexdigit(i) for i in hex_list_from_int(number) ])
+  return cmd_display_raw(displaystring)
+
 def cmd_display(string):
   cmd = CMD_DISPLAY_PREFIX
   if len(string) > 16:
@@ -164,6 +182,10 @@ for i in range(0, 0x100):
   i = swapnibbles(i)
   #~ cmd = cmd_display_raw(bytes((i,i,i,i)))
   cmd = cmd_display_raw(bytes((i,(i+0x10)&0xff,(i+0x20)&0xff,(i+0x30)&0xff)))
+  time.sleep(0.5)
+
+  cmd = hex_to_display(i)
+  time.sleep(.5)
   #~ print(blob_to_hex([i]))
   senddata(ser, crypt_list_8bit(cmd, key))
   #~ readdata(ser, 2)
