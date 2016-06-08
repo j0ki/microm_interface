@@ -56,15 +56,6 @@ CMD_DISPLAY_PREFIX      = CMD_PREFIX + bytes([0x41])
 CMD_STANDBY_PREFIX      = CMD_PREFIX + bytes([0x67])
 CMD_CONFIRM_KEYEXCHANGE = CMD_PREFIX + bytes([0x08])
 
-
-cmd_confirm_key = b'\x8e\x08'
-
-
-#~ print(crypt_multi(c_key, p_key))
-
-# command: assert key is valid (or something like that)
-# encrypted by key ( 0x2a )
-c_cmd_confirm_key = b'\xa4"'
 # display: 'boot'
 # encrypted by key ( 0x2a )
 packet1_1 = b'\xa4\xeb\x08\xde\xdem\xbe\xce^*********'
@@ -141,7 +132,7 @@ readdata(ser, 6)
 c_key = crypt_list_8bit(MASTERKEY, key)
 senddata(ser, c_key)
 
-c_cmd_confirm_key = crypt_list_8bit(cmd_confirm_key, key)
+c_cmd_confirm_key = crypt_list_8bit(CMD_CONFIRM_KEYEXCHANGE, key)
 senddata(ser, c_cmd_confirm_key)
 readdata(ser, 3)
 
