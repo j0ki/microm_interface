@@ -113,6 +113,8 @@ def format_standby_time(t):
   print(cmd)
   return ascii_to_cmd_string(cmd).ljust(9, b'\0')
 
+def cmd_standby(t):
+  return CMD_STANDBY_PREFIX.ljust(9, b'\0') + format_standby_time(t)
 
 init_01 = b'\xab\xbc\xcd\xde\xea\x06\x05\x04\xc0\x10\x00'
 key_01 = 0x01
@@ -166,18 +168,10 @@ for i in range(0, 0x100):
   senddata(ser, crypt_list_8bit(cmd, key))
   #~ readdata(ser, 2)
 
-time.sleep(0.5)
+time.sleep(2)
 
-
-#~ p_standby2 = "8e 67 00 00 00 00 00 00 00 03 13 03 03 12 00 00 00 00"
-
-p_standby2 = "8e 67 00 00 00 00 00 00 00"
-p_standby3 = "03 13 23 03 00 00 00 00 00"
-senddata(ser, crypt_list_8bit(hex_to_blob(p_standby2), key))
-#~ time.sleep(.5)
-#~ senddata(ser, crypt_list_8bit(hex_to_blob(p_standby3), key))
 t = time.localtime()
-senddata(ser, crypt_list_8bit(format_standby_time(t),key))
+senddata(ser, crypt_list_8bit(cmd_standby(t), key))
 
 
 quit()
