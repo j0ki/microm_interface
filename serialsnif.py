@@ -51,6 +51,11 @@ init_0101 = b'\xab\xbc\xcd\xde\xea\x06\x05\x04\xc0\x10\x00'
 
 MASTERKEY = bytes((0x0e, 0x0b))
 
+CMD_PREFIX = bytes([0x8e])
+CMD_DISPLAY_PREFIX      = CMD_PREFIX + bytes([0x41])
+CMD_STANDBY_PREFIX      = CMD_PREFIX + bytes([0x67])
+CMD_CONFIRM_KEYEXCHANGE = CMD_PREFIX + bytes([0x08])
+
 
 cmd_confirm_key = b'\x8e\x08'
 
