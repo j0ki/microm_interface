@@ -97,6 +97,14 @@ def cmd_display(string):
   cmd = cmd.ljust(18, b'\0')
   return cmd
 
+def cmd_display_raw(bytestring):
+  cmd = CMD_DISPLAY_PREFIX
+  if len(bytestring) > 16:
+    return b''
+  cmd += bytestring
+  cmd = cmd.ljust(18, b'\0')
+  return cmd
+
 def format_standby_time(t):
   h1, h2 = divmod(t.tm_hour, 10)
   m1, m2 = divmod(t.tm_min, 10)
@@ -150,6 +158,13 @@ for i in range(0, 100):
   #~ c_data = readdata(ser, 2)
   #~ print("<== " + blob_to_hex(crypt_list_8bit(c_data, key)))
 
+for i in range(0, 0x100):
+  i = swapnibbles(i)
+  #~ cmd = cmd_display_raw(bytes((i,i,i,i)))
+  cmd = cmd_display_raw(bytes((i,(i+0x10)&0xff,(i+0x20)&0xff,(i+0x30)&0xff)))
+  #~ print(blob_to_hex([i]))
+  senddata(ser, crypt_list_8bit(cmd, key))
+  #~ readdata(ser, 2)
 
 time.sleep(0.5)
 
