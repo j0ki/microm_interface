@@ -80,7 +80,7 @@ cmd_display_0_0_2_0 = b'\x8eA\x03\x03#\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x
 def swapnibbles(x):
   return x<<4 & 0xf0 | x>>4 & 0x0f
 
-def ascii_to_cmd_string(string):
+def ascii_to_display(string):
   displaystring = b''
   for c in string:
     if c.isdigit():
@@ -93,7 +93,7 @@ def cmd_display(string):
   cmd = CMD_DISPLAY_PREFIX
   if len(string) > 16:
     return b''
-  cmd += ascii_to_cmd_string(string)
+  cmd += ascii_to_display(string)
   cmd = cmd.ljust(18, b'\0')
   return cmd
 
@@ -111,7 +111,7 @@ def format_standby_time(t):
   s1, s2 = divmod(t.tm_sec, 10)
   cmd = ''.join(map(str,[h1,h2,m1,m2,s1,s2]))
   print(cmd)
-  return ascii_to_cmd_string(cmd).ljust(9, b'\0')
+  return ascii_to_display(cmd).ljust(9, b'\0')
 
 def cmd_standby(t):
   return CMD_STANDBY_PREFIX.ljust(9, b'\0') + format_standby_time(t)
