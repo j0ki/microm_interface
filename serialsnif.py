@@ -82,13 +82,13 @@ cmd_display_0_0_2_0 = b'\x8eA\x03\x03#\x03\x00\x01\x01\x01\x01\x01\x01\x01\x01\x
 cmd_display_0_0_2_0 = b'\x8eA\x03\x03#\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 
 def swapnibbles(x):
-  return bytes([x<<4 & 0xf0 | x>>4 & 0x0f])
+  return x<<4 & 0xf0 | x>>4 & 0x0f
 
 def ascii_to_cmd_string(string):
   cmd = b''
   for c in string:
     if c.isdigit():
-      cmd += swapnibbles(ord(c))
+      cmd += bytes([swapnibbles(ord(c))])
     else:
       cmd += ord(c)
   return cmd
