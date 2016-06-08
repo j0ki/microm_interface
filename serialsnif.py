@@ -81,13 +81,13 @@ def swapnibbles(x):
   return x<<4 & 0xf0 | x>>4 & 0x0f
 
 def ascii_to_cmd_string(string):
-  cmd = b''
+  displaystring = b''
   for c in string:
     if c.isdigit():
-      cmd += bytes([swapnibbles(ord(c))])
+      displaystring += bytes([swapnibbles(ord(c))])
     else:
-      cmd += ord(c)
-  return cmd
+      displaystring += ord(c)
+  return displaystring
 
 def cmd_display(string):
   cmd = CMD_DISPLAY_PREFIX
