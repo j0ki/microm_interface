@@ -3,9 +3,18 @@
 import serial
 import sys
 import time
-
+import json
 
 verbose = False
+
+
+
+MASTERKEY = bytes((0x0e, 0x0b))
+
+CMD_PREFIX = bytes([0x8e])
+CMD_DISPLAY_PREFIX      = CMD_PREFIX + bytes([0x41])
+CMD_STANDBY_PREFIX      = CMD_PREFIX + bytes([0x67])
+CMD_CONFIRM_KEYEXCHANGE = CMD_PREFIX + bytes([0x08])
 
 def crypt_multi(data, key):
   return bytes(a^b for a,b in zip(data,key))
@@ -31,51 +40,11 @@ def senddata(ser, packet):
     print("--> " + blob_to_hex(packet))
   ser.write(packet)
 
-
-ser = serial.Serial(port=sys.argv[1], baudrate=115200)
-ser.timeout = 10
-
-
-
-#~ init = "ab bc cd de ea 06 05 04 c0 10 00"
-#~ print(bytes([int(x, 16) for x in init.split(" ")]))
-
-#~ quit()
-
-init_0101 = b'\xab\xbc\xcd\xde\xea\x06\x05\x04\xc0\x10\x00'
-
-
-
-
-
-
-MASTERKEY = bytes((0x0e, 0x0b))
-
-CMD_PREFIX = bytes([0x8e])
-CMD_DISPLAY_PREFIX      = CMD_PREFIX + bytes([0x41])
-CMD_STANDBY_PREFIX      = CMD_PREFIX + bytes([0x67])
-CMD_CONFIRM_KEYEXCHANGE = CMD_PREFIX + bytes([0x08])
-
-# display: 'boot'
-# encrypted by key ( 0x2a )
-packet1_1 = b'\xa4\xeb\x08\xde\xdem\xbe\xce^*********'
-
-
-
-#~ print(decrypt(p_key, 0x2a))
-#~ print(decrypt(p_cmd_confirm_key, 0x2a))
-
-#~ quit()
-
-
 cmd_display_boot = b'\x8e\xc1"\xf4\xf4G\x94\xe4t\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 cmd_display_boot = b'\x8eA"\xf4\xf4G\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 
 cmd_display_dash_dash_dash_dash = b'\x8eA\xd3\xd3\xd3\xd3\x00\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01'
 cmd_display_dash_dash_dash_dash = b'\x8eA\xd3\xd3\xd3\xd3\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-
-cmd_display_0_0_2_0 = b'\x8eA\x03\x03#\x03\x00\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01'
-cmd_display_0_0_2_0 = b'\x8eA\x03\x03#\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 
 def swapnibbles(x):
   return x<<4 & 0xf0 | x>>4 & 0x0f
@@ -134,92 +103,103 @@ def format_standby_time(t):
 def cmd_standby(t):
   return CMD_STANDBY_PREFIX.ljust(9, b'\0') + format_standby_time(t)
 
-magic = b'\xab\xbc\xcd\xde\xea'
+def initialize_interface_board(ser):
+  magic = b'\xab\xbc\xcd\xde\xea'
 
-init_01 = b'\xab\xbc\xcd\xde\xea\x06\x05\x04\xc0\x10\x00'
-key_01 = 0x01
+  init_01 = b'\xab\xbc\xcd\xde\xea\x06\x05\x04\xc0\x10\x00'
+  key_01 = 0x01
 
-# initialize key_exchange
-init_03 = b'\xab\xbc\xcd\xde\xea\x0f\x06\x06@\x90\xd0'
-key_03 = 0x03
+  # initialize key_exchange
+  init_03 = b'\xab\xbc\xcd\xde\xea\x0f\x06\x06@\x90\xd0'
+  key_03 = 0x03
 
-# initialize key_exchange
-# plaintext magic + encrypted garbage(?)
-init_2a = b'\xab\xbc\xcd\xde\xea\x03\'\x05p\xb0\xc0'
+  # initialize key_exchange
+  # plaintext magic + encrypted garbage(?)
+  init_2a = b'\xab\xbc\xcd\xde\xea\x03\'\x05p\xb0\xc0'
 
-#~ key_2a = b'**'
-#~ key_2a = bytes((0x2a, 0x2a))
-key_2a = 0x2a
+  #~ key_2a = b'**'
+  #~ key_2a = bytes((0x2a, 0x2a))
+  key_2a = 0x2a
 
 
-init = init_03[5:]
-key = key_03
+  init = init_03[5:]
+  key = key_03
 
-senddata(ser, magic)
-senddata(ser, init)
-data = readdata(ser, 6)
-if len(data) < 6:
-  print("bad response:(",len(data), ") ", data)
-  quit()
-c_key = crypt_list_8bit(MASTERKEY, key)
-senddata(ser, c_key)
+  senddata(ser, magic)
+  senddata(ser, init)
+  data = readdata(ser, 6)
+  if len(data) < 6:
+    print("bad response:(",len(data), ") ", data)
+    return (False, 0)
+  c_key = crypt_list_8bit(MASTERKEY, key)
+  senddata(ser, c_key)
 
-c_cmd_confirm_key = crypt_list_8bit(CMD_CONFIRM_KEYEXCHANGE, key)
-senddata(ser, c_cmd_confirm_key)
-readdata(ser, 3)
+  c_cmd_confirm_key = crypt_list_8bit(CMD_CONFIRM_KEYEXCHANGE, key)
+  senddata(ser, c_cmd_confirm_key)
+  readdata(ser, 3)
+  return (True, key)
 
-senddata(ser, crypt_list_8bit(cmd_display_dash_dash_dash_dash, key))
-time.sleep(.5)
-senddata(ser, crypt_list_8bit(cmd_display_0_0_2_0, key))
-time.sleep(.5)
-senddata(ser, crypt_list_8bit(cmd_display_boot, key))
-time.sleep(.5)
-senddata(ser, crypt_list_8bit(cmd_display_dash_dash_dash_dash, key))
+def generate_keymap(ser, key):
+  keymap = dict()
+  while True:
+    data = crypt_list_8bit(readdata(ser, 2), key)
+    if len(data) < 2:
+      continue
+    if data == CMD_STANDBY_PREFIX:
+      t = time.localtime()
+      senddata(ser, crypt_list_8bit(cmd_standby(t), key))
+      break
+    keycode = data[1]
+    remote_control_key = input(str(keycode)+": ")
+    keymap[keycode] = remote_control_key
+    senddata(ser, crypt_list_8bit(hex_to_display(data[0]<<8 | data[1]), key))
+  return keymap
 
-while True:
-  data = crypt_list_8bit(readdata(ser, 2), key)
-  if data == CMD_STANDBY_PREFIX:
-    t = time.localtime()
-    senddata(ser, crypt_list_8bit(cmd_standby(t), key))
-    break
-  else:
-    print(blob_to_hex(data))
-    if len(data) > 1:
-      senddata(ser, crypt_list_8bit(hex_to_display(data[0]<<8 | data[1]), key))
+def display_all_decimals(ser, key):
+  for i in range(0, 10000):
+    i = str(i).rjust(4, "0")
+    senddata(ser, crypt_list_8bit(cmd_display(i), key))
 
-quit()
+def display_raw_bytes(ser):
+  for i in range(0, 0x100):
+    i = swapnibbles(i)
+    #~ cmd = cmd_display_raw(bytes((i,(i+0x10)&0xff,(i+0x20)&0xff,(i+0x30)&0xff)))
+    time.sleep(0.5)
 
-for i in range(0, 100):
-  i = str(i).rjust(4, "0")
-  #~ print(cmd_display(i))
-  senddata(ser, crypt_list_8bit(cmd_display(i), key))
-  #~ c_data = readdata(ser, 2)
-  #~ print("<== " + blob_to_hex(crypt_list_8bit(c_data, key)))
+    cmd = hex_to_display(i)
+    time.sleep(.5)
+    senddata(ser, crypt_list_8bit(cmd, key))
 
-for i in range(0, 0x100):
-  i = swapnibbles(i)
-  #~ cmd = cmd_display_raw(bytes((i,i,i,i)))
-  cmd = cmd_display_raw(bytes((i,(i+0x10)&0xff,(i+0x20)&0xff,(i+0x30)&0xff)))
-  time.sleep(0.5)
-
-  cmd = hex_to_display(i)
+def display_funny_boot(ser):
+  senddata(ser, crypt_list_8bit(cmd_display_dash_dash_dash_dash, key))
   time.sleep(.5)
-  #~ print(blob_to_hex([i]))
-  senddata(ser, crypt_list_8bit(cmd, key))
-  #~ readdata(ser, 2)
-
-time.sleep(2)
-
-t = time.localtime()
-senddata(ser, crypt_list_8bit(cmd_standby(t), key))
+  senddata(ser, crypt_list_8bit(cmd_display_0_0_2_0, key))
+  time.sleep(.5)
+  senddata(ser, crypt_list_8bit(cmd_display_boot, key))
+  time.sleep(.5)
+  senddata(ser, crypt_list_8bit(cmd_display_dash_dash_dash_dash, key))
 
 
+ser = serial.Serial(port=sys.argv[1], baudrate=115200)
+ser.timeout = 10
+
+success, key = initialize_interface_board(ser)
+if not success:
+  print("failed to initialize")
+  quit()
+keymap = generate_keymap(ser, key)
+
+print(keymap)
+print("\n\n\n")
+print(json.dumps(keymap, sort_keys=True, indent=4, separators=(',', ': ')))
+
+
+
+#~ t = time.localtime()
+#~ senddata(ser, crypt_list_8bit(cmd_standby(t), key))
 quit()
-#~ time.sleep(.1)
 
-
-
-
+#########################################################################
 remove_exchange = len(sys.argv) > 1
 
 def decrypt(data, key):
