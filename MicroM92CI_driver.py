@@ -137,6 +137,9 @@ def initialize_interface_board(ser):
   c_cmd_confirm_key = crypt_list_8bit(CMD_CONFIRM_KEYEXCHANGE, key)
   senddata(ser, c_cmd_confirm_key)
   readdata(ser, 3)
+  if len(data) < 3:
+    print("bad response:(",len(data), ") ", data)
+    return (False, 0)
   return (True, key)
 
 def generate_keymap(ser, key):
