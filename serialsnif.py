@@ -134,6 +134,8 @@ def format_standby_time(t):
 def cmd_standby(t):
   return CMD_STANDBY_PREFIX.ljust(9, b'\0') + format_standby_time(t)
 
+magic = b'\xab\xbc\xcd\xde\xea'
+
 init_01 = b'\xab\xbc\xcd\xde\xea\x06\x05\x04\xc0\x10\x00'
 key_01 = 0x01
 
@@ -150,13 +152,15 @@ init_2a = b'\xab\xbc\xcd\xde\xea\x03\'\x05p\xb0\xc0'
 key_2a = 0x2a
 
 
-init = init_01
-key = key_01
+init = init_03[5:]
+key = key_03
 
-
+senddata(ser, magic)
 senddata(ser, init)
-readdata(ser, 6)
-
+data = readdata(ser, 6)
+if len(data) < 6:
+  print("bad response:(",len(data), ") ", data)
+  quit()
 c_key = crypt_list_8bit(MASTERKEY, key)
 senddata(ser, c_key)
 
@@ -170,6 +174,20 @@ senddata(ser, crypt_list_8bit(cmd_display_0_0_2_0, key))
 time.sleep(.5)
 senddata(ser, crypt_list_8bit(cmd_display_boot, key))
 time.sleep(.5)
+senddata(ser, crypt_list_8bit(cmd_display_dash_dash_dash_dash, key))
+
+while True:
+  data = crypt_list_8bit(readdata(ser, 2), key)
+  if data == CMD_STANDBY_PREFIX:
+    t = time.localtime()
+    senddata(ser, crypt_list_8bit(cmd_standby(t), key))
+    break
+  else:
+    print(blob_to_hex(data))
+    if len(data) > 1:
+      senddata(ser, crypt_list_8bit(hex_to_display(data[0]<<8 | data[1]), key))
+
+quit()
 
 for i in range(0, 100):
   i = str(i).rjust(4, "0")
