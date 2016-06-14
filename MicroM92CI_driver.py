@@ -78,22 +78,21 @@ def _cmd_standby(t):
   return _CMD_STANDBY_PREFIX.ljust(9, b'\0') + _format_standby_time(t)
 
 class M92CI_IR:
-
   def crypt_multi(self, data):
-    return bytes(a^b for a,b in zip(data,self.key))
+    return bytes(a^b for a,b in zip(data,self.__key))
 
   def crypt_list_8bit(self, data):
-    return bytes([d ^ self.key for d in data])
+    return bytes([d ^ self.__key for d in data])
 
   def readdata_clear(self, n):
-    data = self.ser.read(n)
+    data = self.__ser.read(n)
     if data:
       if self.verbose:
         print("<== " + _blob_to_hex(data))
     return data
 
   def readdata(self, n):
-    data = self.ser.read(n)
+    data = self.__ser.read(n)
     if data:
       data = self.crypt_list_8bit(data)
       if self.verbose:
@@ -103,16 +102,16 @@ class M92CI_IR:
   def senddata_clear(self, packet):
     if self.verbose:
       print("--> " + _blob_to_hex(packet))
-    self.ser.write(packet)
+    self.__ser.write(packet)
 
   def senddata(self, packet):
     if self.verbose:
       print("--> " + _blob_to_hex(packet))
     packet = self.crypt_list_8bit(packet)
-    self.ser.write(packet)
+    self.__ser.write(packet)
 
   def __init__(self, port, timeout=2, verbose=False):
-    self.ser = serial.Serial(port=port, baudrate=115200, timeout=timeout)
+    self.__ser = serial.Serial(port=port, baudrate=115200, timeout=timeout)
 
     self.verbose = verbose
 
@@ -135,7 +134,7 @@ class M92CI_IR:
 
 
     init = init_03
-    self.key = key_03
+    self.__key = key_03
 
     self.senddata_clear(magic)
     self.senddata_clear(init)
