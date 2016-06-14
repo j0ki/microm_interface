@@ -197,19 +197,3 @@ class M92CI_IR:
     time.sleep(.5)
     self.senddata(cmd_display_dash_dash_dash_dash)
 
-def test_generate_keymap():
-  ir_board = M92CI_IR(sys.argv[1], timeout=5, verbose=True)
-  ir_board.display_funny_boot()
-
-  keymap = ir_board.generate_keymap()
-
-  ir_board.standby(time.localtime())
-
-  print(keymap)
-  print("\n\n\n")
-  print(json.dumps(keymap, sort_keys=True, indent=4, separators=(',', ': ')))
-
-
-test_generate_keymap()
-
-
