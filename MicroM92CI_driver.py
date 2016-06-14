@@ -40,12 +40,6 @@ def senddata(ser, packet):
     print("--> " + blob_to_hex(packet))
   ser.write(packet)
 
-cmd_display_boot = b'\x8e\xc1"\xf4\xf4G\x94\xe4t\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-cmd_display_boot = b'\x8eA"\xf4\xf4G\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-
-cmd_display_dash_dash_dash_dash = b'\x8eA\xd3\xd3\xd3\xd3\x00\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01'
-cmd_display_dash_dash_dash_dash = b'\x8eA\xd3\xd3\xd3\xd3\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-
 def swapnibbles(x):
   return x<<4 & 0xf0 | x>>4 & 0x0f
 
@@ -97,7 +91,7 @@ def format_standby_time(t):
   m1, m2 = divmod(t.tm_min, 10)
   s1, s2 = divmod(t.tm_sec, 10)
   cmd = ''.join(map(str,[h1,h2,m1,m2,s1,s2]))
-  print(cmd)
+  #~ print(cmd)
   return ascii_to_display(cmd).ljust(9, b'\0')
 
 def cmd_standby(t):
@@ -149,8 +143,6 @@ def generate_keymap(ser, key):
     if len(data) < 2:
       continue
     if data == CMD_STANDBY_PREFIX:
-      t = time.localtime()
-      senddata(ser, crypt_list_8bit(cmd_standby(t), key))
       break
     keycode = data[1]
     remote_control_key = input(str(keycode)+": ")
@@ -174,9 +166,13 @@ def display_raw_bytes(ser):
     senddata(ser, crypt_list_8bit(cmd, key))
 
 def display_funny_boot(ser):
+  cmd_display_boot = b'\x8e\xc1"\xf4\xf4G\x94\xe4t\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+  cmd_display_boot = b'\x8eA"\xf4\xf4G\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+
+  cmd_display_dash_dash_dash_dash = b'\x8eA\xd3\xd3\xd3\xd3\x00\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01'
+  cmd_display_dash_dash_dash_dash = b'\x8eA\xd3\xd3\xd3\xd3\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+
   senddata(ser, crypt_list_8bit(cmd_display_dash_dash_dash_dash, key))
-  time.sleep(.5)
-  senddata(ser, crypt_list_8bit(cmd_display_0_0_2_0, key))
   time.sleep(.5)
   senddata(ser, crypt_list_8bit(cmd_display_boot, key))
   time.sleep(.5)
@@ -190,8 +186,12 @@ success, key = initialize_interface_board(ser)
 if not success:
   print("failed to initialize")
   quit()
+display_funny_boot(ser)
+
 keymap = generate_keymap(ser, key)
 
+t = time.localtime()
+senddata(ser, crypt_list_8bit(cmd_standby(t), key))
 print(keymap)
 print("\n\n\n")
 print(json.dumps(keymap, sort_keys=True, indent=4, separators=(',', ': ')))
