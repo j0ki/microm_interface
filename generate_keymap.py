@@ -4,19 +4,23 @@ import MicroM92CI_driver as m92
 import sys
 import pickle
 
-def test_generate_keymap():
-  ir_board = m92.M92CI_IR(sys.argv[1], timeout=5, verbose=True)
-  ir_board.display_funny_boot()
+KEYMAP_FILENAME = "keymap.p"
 
-  keymap = ir_board.generate_keymap()
+ir_board = m92.M92CI_IR(sys.argv[1], timeout=5, verbose=True)
+ir_board.display_funny_boot()
 
-  ir_board.standby()
+try:
+  keymap = pickle.load( open(KEYMAP_FILENAME, "rb") )
+except FileNotFoundError:
+  print("NOTICE:",KEYMAP_FILENAME,"not found, using empty dict", file=sys.stderr)
+  keymap = dict()
 
-  print(keymap)
-  print("\n\n\n")
-  print(json.dumps(keymap, sort_keys=True, indent=4, separators=(',', ': ')))
+keymap = ir_board.generate_keymap(keymap)
 
+#~ ir_board.standby()
 
-test_generate_keymap()
+print(keymap)
+
+pickle.dump( keymap, open(KEYMAP_FILENAME, "wb") )
 
 

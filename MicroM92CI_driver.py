@@ -155,8 +155,7 @@ class M92CI_IR:
       cmd = _cmd_standby(time.localtime())
     self.senddata(cmd)
 
-  def generate_keymap(self):
-    keymap = dict()
+  def generate_keymap(self, keymap=dict()):
     while True:
       data = self.readdata(2)
       if len(data) < 2:
@@ -164,8 +163,12 @@ class M92CI_IR:
       if data == _CMD_STANDBY_PREFIX:
         break
       keycode = data[1]
-      remote_control_key = input(str(keycode)+": ")
-      keymap[keycode] = remote_control_key
+      prompt = str(keycode)
+      if keycode in keymap:
+        prompt += " \'"+keymap[keycode]+"\'"
+      remote_control_key = input(prompt+": ")
+      if remote_control_key:
+        keymap[keycode] = remote_control_key
       self.senddata(_hex_to_display(data[0]<<8 | data[1]))
     return keymap
 
