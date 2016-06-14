@@ -5,52 +5,8 @@ import sys
 import time
 import json
 
-verbose = False
-
-
-
-MASTERKEY = bytes((0x0e, 0x0b))
-
-CMD_PREFIX = bytes([0x8e])
-CMD_DISPLAY_PREFIX      = CMD_PREFIX + bytes([0x41])
-CMD_STANDBY_PREFIX      = CMD_PREFIX + bytes([0x67])
-CMD_CONFIRM_KEYEXCHANGE = CMD_PREFIX + bytes([0x08])
-
-def crypt_multi(data, key):
-  return bytes(a^b for a,b in zip(data,key))
-
-def crypt_list_8bit(data, key):
-  return bytes([d ^ key for d in data])
-
 def blob_to_hex(bytestring):
   return " ".join("{:02x}".format(c) for c in bytestring)
-
-def hex_to_blob(asciistring):
-  return bytes([int(x,16) for x in asciistring.split(" ")])
-
-def readdata(ser, n):
-  data = ser.read(n)
-  if data:
-    if verbose:
-      print("<== " + blob_to_hex(data))
-  return data
-
-def senddata(ser, packet):
-  if verbose:
-    print("--> " + blob_to_hex(packet))
-  ser.write(packet)
-
-def swapnibbles(x):
-  return x<<4 & 0xf0 | x>>4 & 0x0f
-
-def ascii_to_display(string):
-  displaystring = b''
-  for c in string:
-    if c.isdigit():
-      displaystring += bytes([swapnibbles(ord(c))])
-    else:
-      displaystring += ord(c)
-  return displaystring
 
 def hex_list_from_int(number):
   h, l  = divmod(number, 16)
@@ -69,6 +25,21 @@ def hexdigit(i):
 def hex_to_display(number):
   displaystring = bytes([ hexdigit(i) for i in hex_list_from_int(number) ])
   return cmd_display_raw(displaystring)
+
+def hex_to_blob(asciistring):
+  return bytes([int(x,16) for x in asciistring.split(" ")])
+
+def swapnibbles(x):
+  return x<<4 & 0xf0 | x>>4 & 0x0f
+
+def ascii_to_display(string):
+  displaystring = b''
+  for c in string:
+    if c.isdigit():
+      displaystring += bytes([swapnibbles(ord(c))])
+    else:
+      displaystring += ord(c)
+  return displaystring
 
 def cmd_display(string):
   cmd = CMD_DISPLAY_PREFIX
@@ -97,107 +68,148 @@ def format_standby_time(t):
 def cmd_standby(t):
   return CMD_STANDBY_PREFIX.ljust(9, b'\0') + format_standby_time(t)
 
-def initialize_interface_board(ser):
-  magic = b'\xab\xbc\xcd\xde\xea'
 
-  init_01 = b'\xab\xbc\xcd\xde\xea\x06\x05\x04\xc0\x10\x00'
-  key_01 = 0x01
+MASTERKEY = bytes((0x0e, 0x0b))
 
-  # initialize key_exchange
-  init_03 = b'\xab\xbc\xcd\xde\xea\x0f\x06\x06@\x90\xd0'
-  key_03 = 0x03
+CMD_PREFIX = bytes([0x8e])
+CMD_DISPLAY_PREFIX      = CMD_PREFIX + bytes([0x41])
+CMD_STANDBY_PREFIX      = CMD_PREFIX + bytes([0x67])
+CMD_CONFIRM_KEYEXCHANGE = CMD_PREFIX + bytes([0x08])
 
-  # initialize key_exchange
-  # plaintext magic + encrypted garbage(?)
-  init_2a = b'\xab\xbc\xcd\xde\xea\x03\'\x05p\xb0\xc0'
+class M92CI_IR:
 
-  #~ key_2a = b'**'
-  #~ key_2a = bytes((0x2a, 0x2a))
-  key_2a = 0x2a
+  def crypt_multi(self, data):
+    return bytes(a^b for a,b in zip(data,self.key))
+
+  def crypt_list_8bit(self, data):
+    return bytes([d ^ self.key for d in data])
+
+  def readdata_clear(self, n):
+    data = self.ser.read(n)
+    if data:
+      if self.verbose:
+        print("<== " + blob_to_hex(data))
+    return data
+
+  def readdata(self, n):
+    data = self.ser.read(n)
+    if data:
+      data = self.crypt_list_8bit(data)
+      if self.verbose:
+        print("<== " + blob_to_hex(data))
+    return data
+
+  def senddata_clear(self, packet):
+    if self.verbose:
+      print("--> " + blob_to_hex(packet))
+    self.ser.write(packet)
+
+  def senddata(self, packet):
+    if self.verbose:
+      print("--> " + blob_to_hex(packet))
+    packet = self.crypt_list_8bit(packet)
+    self.ser.write(packet)
+
+  def __init__(self, port, timeout=2, verbose=False):
+    self.ser = serial.Serial(port=port, baudrate=115200, timeout=timeout)
+
+    self.verbose = verbose
+
+    magic = b'\xab\xbc\xcd\xde\xea'
+
+    init_01 = b'\x06\x05\x04\xc0\x10\x00'
+    key_01 = 0x01
+
+    # initialize key_exchange
+    init_03 = b'\x0f\x06\x06@\x90\xd0'
+    key_03 = 0x03
+
+    # initialize key_exchange
+    # plaintext magic + encrypted garbage(?)
+    init_2a = b'\x03\'\x05p\xb0\xc0'
+
+    #~ key_2a = b'**'
+    #~ key_2a = bytes((0x2a, 0x2a))
+    key_2a = 0x2a
 
 
-  init = init_03[5:]
-  key = key_03
+    init = init_03
+    self.key = key_03
 
-  senddata(ser, magic)
-  senddata(ser, init)
-  data = readdata(ser, 6)
-  if len(data) < 6:
-    print("bad response:(",len(data), ") ", data)
-    return (False, 0)
-  c_key = crypt_list_8bit(MASTERKEY, key)
-  senddata(ser, c_key)
+    self.senddata_clear(magic)
+    self.senddata_clear(init)
+    data = self.readdata_clear(6)
+    if len(data) < 6:
+      raise ConnectionError("bad response:("+str(len(data))+") "+ str(data))
+    self.senddata(MASTERKEY)
 
-  c_cmd_confirm_key = crypt_list_8bit(CMD_CONFIRM_KEYEXCHANGE, key)
-  senddata(ser, c_cmd_confirm_key)
-  readdata(ser, 3)
-  if len(data) < 3:
-    print("bad response:(",len(data), ") ", data)
-    return (False, 0)
-  return (True, key)
+    self.senddata(CMD_CONFIRM_KEYEXCHANGE)
+    self.readdata(3)
+    if len(data) < 3:
+      raise ConnectionError("bad response:("+str(len(data))+") "+ str(data))
 
-def generate_keymap(ser, key):
-  keymap = dict()
-  while True:
-    data = crypt_list_8bit(readdata(ser, 2), key)
-    if len(data) < 2:
-      continue
-    if data == CMD_STANDBY_PREFIX:
-      break
-    keycode = data[1]
-    remote_control_key = input(str(keycode)+": ")
-    keymap[keycode] = remote_control_key
-    senddata(ser, crypt_list_8bit(hex_to_display(data[0]<<8 | data[1]), key))
-  return keymap
+  def standby(self, standby_time=None):
+    if standby_time:
+      cmd = cmd_standby(standby_time)
+    else:
+      cmd = cmd_standby(time.localtime())
+    self.senddata(cmd)
 
-def display_all_decimals(ser, key):
-  for i in range(0, 10000):
-    i = str(i).rjust(4, "0")
-    senddata(ser, crypt_list_8bit(cmd_display(i), key))
+  def generate_keymap(self):
+    keymap = dict()
+    while True:
+      data = self.readdata(2)
+      if len(data) < 2:
+        continue
+      if data == CMD_STANDBY_PREFIX:
+        break
+      keycode = data[1]
+      remote_control_key = input(str(keycode)+": ")
+      keymap[keycode] = remote_control_key
+      self.senddata(hex_to_display(data[0]<<8 | data[1]))
+    return keymap
 
-def display_raw_bytes(ser):
-  for i in range(0, 0x100):
-    i = swapnibbles(i)
-    #~ cmd = cmd_display_raw(bytes((i,(i+0x10)&0xff,(i+0x20)&0xff,(i+0x30)&0xff)))
-    time.sleep(0.5)
+  def display_all_decimals(self):
+    for i in range(0, 10000):
+      i = str(i).rjust(4, "0")
+      self.senddata(cmd_display(i))
 
-    cmd = hex_to_display(i)
+  def display_raw_bytes(self):
+    for i in range(0, 0x100):
+      i = swapnibbles(i)
+      #~ cmd = cmd_display_raw(bytes((i,(i+0x10)&0xff,(i+0x20)&0xff,(i+0x30)&0xff)))
+      time.sleep(0.5)
+
+      cmd = hex_to_display(i)
+      time.sleep(.5)
+      self.senddata(cmd)
+
+  def display_funny_boot(self):
+    cmd_display_boot = b'\x8e\xc1"\xf4\xf4G\x94\xe4t\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+    cmd_display_boot = b'\x8eA"\xf4\xf4G\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+
+    cmd_display_dash_dash_dash_dash = b'\x8eA\xd3\xd3\xd3\xd3\x00\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01'
+    cmd_display_dash_dash_dash_dash = b'\x8eA\xd3\xd3\xd3\xd3\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+
+    self.senddata(cmd_display_dash_dash_dash_dash)
     time.sleep(.5)
-    senddata(ser, crypt_list_8bit(cmd, key))
+    self.senddata(cmd_display_boot)
+    time.sleep(.5)
+    self.senddata(cmd_display_dash_dash_dash_dash)
 
-def display_funny_boot(ser):
-  cmd_display_boot = b'\x8e\xc1"\xf4\xf4G\x94\xe4t\x00\x00\x00\x00\x00\x00\x00\x00\x00'
-  cmd_display_boot = b'\x8eA"\xf4\xf4G\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+def test_generate_keymap():
+  ir_board = M92CI_IR(sys.argv[1], timeout=5, verbose=True)
+  ir_board.display_funny_boot()
 
-  cmd_display_dash_dash_dash_dash = b'\x8eA\xd3\xd3\xd3\xd3\x00\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01'
-  cmd_display_dash_dash_dash_dash = b'\x8eA\xd3\xd3\xd3\xd3\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+  keymap = ir_board.generate_keymap()
 
-  senddata(ser, crypt_list_8bit(cmd_display_dash_dash_dash_dash, key))
-  time.sleep(.5)
-  senddata(ser, crypt_list_8bit(cmd_display_boot, key))
-  time.sleep(.5)
-  senddata(ser, crypt_list_8bit(cmd_display_dash_dash_dash_dash, key))
+  ir_board.standby(time.localtime())
 
-
-ser = serial.Serial(port=sys.argv[1], baudrate=115200)
-ser.timeout = 10
-
-success, key = initialize_interface_board(ser)
-if not success:
-  print("failed to initialize")
-  quit()
-display_funny_boot(ser)
-
-keymap = generate_keymap(ser, key)
-
-t = time.localtime()
-senddata(ser, crypt_list_8bit(cmd_standby(t), key))
-print(keymap)
-print("\n\n\n")
-print(json.dumps(keymap, sort_keys=True, indent=4, separators=(',', ': ')))
+  print(keymap)
+  print("\n\n\n")
+  print(json.dumps(keymap, sort_keys=True, indent=4, separators=(',', ': ')))
 
 
+test_generate_keymap()
 
-#~ t = time.localtime()
-#~ senddata(ser, crypt_list_8bit(cmd_standby(t), key))
 
