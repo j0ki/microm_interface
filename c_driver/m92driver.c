@@ -7,19 +7,20 @@
 *
 */
 
-#include <termios.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <fcntl.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <unistd.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <termios.h>
 
 
 
 #define log_error (printf)
 #define log_debug (printf)
+#define log_trace (printf)
 
 struct driva {
 	int fd;
@@ -47,6 +48,11 @@ static const unsigned char CMD_STANDBY_PREFIX[] = {CMD_PREFIX, 0x67};
 static const unsigned char CMD_CONFIRM_KEYEXCHANGE[] = {CMD_PREFIX, 0x08};
 static const unsigned char DISPLAY_INIT[] = "\x13\xe4\x13\x45";
 
+static int microm92ci_decode(struct ir_remote* remote, struct decode_ctx_t* ctx);
+static int microm92ci_init(void);
+static int microm92ci_deinit(void);
+static char* microm92ci_rec(struct ir_remote* remotes);
+
 
 static unsigned char crypt_byte(unsigned char byte)
 {
@@ -58,15 +64,6 @@ static void crypt_bytes(unsigned char *src, unsigned char *dest, int len)
 	for (int i = 0; i < len; i++) {
 		dest[i] = crypt_byte(src[i]);
 	}
-}
-
-static int microm92ci_deinit(void)
-{
-	log_debug("m92 deinit");
-	//TODO: put board into standby? no! it should go into standby just before the cpu halts
-	close(drv.fd);
-	//~ tty_delete_lock();
-	return 1;
 }
 
 static int readdata_with_select(unsigned char *dest, int nbytes)
@@ -138,7 +135,7 @@ static int microm92ci_init(void)
 	options.c_cc[VTIME] = 0;
 	options.c_cc[VMIN]  = 0;
 	if (tcsetattr(drv.fd, TCSAFLUSH, &options) == -1) {
-		log_error("m92: tcsetattr() failed");
+		log_trace("m92: tcsetattr() failed");
 		return 0;
 	}
 	tcflush(drv.fd, TCIFLUSH);
@@ -149,15 +146,12 @@ static int microm92ci_init(void)
 		microm92ci_deinit();
 		return 0;
 	}
-	//~ usleep(200);
-
 	log_debug("init: sending crypto init..");
 	if (!write(drv.fd, INIT, sizeof INIT)) {
 		log_error("microm92ci: failed to send init to m92");
 		microm92ci_deinit();
 		return 0;
 	}
-	//~ usleep(200);
 	log_debug("init: reading crypto init response..");
 	int n = readdata(buffer, 6);
 	if (n != 6) {
@@ -185,7 +179,6 @@ static int microm92ci_init(void)
 		microm92ci_deinit();
 		return 0;
 	}
-	//~ usleep(200);
 	log_debug("init: reading key exchange ack..");
 	n = readdata(buffer, 3);
 	if (n != 3) {
@@ -217,7 +210,7 @@ static int microm92ci_init(void)
 	options.c_cc[VTIME] = 0;
 	options.c_cc[VMIN]  = 0;
 	if (tcsetattr(drv.fd, TCSAFLUSH, &options) == -1) {
-		log_error("m92: tcsetattr() failed");
+		log_trace("m92: tcsetattr() failed");
 		return 0;
 	}
 
@@ -225,6 +218,14 @@ static int microm92ci_init(void)
 	return 1;
 }
 
+static int microm92ci_deinit(void)
+{
+	log_debug("m92 deinit");
+	//TODO: put board into standby? no! it should go into standby just before the cpu halts
+	close(drv.fd);
+	//~ tty_delete_lock();
+	return 1;
+}
 
 int main()
 {
