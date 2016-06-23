@@ -121,23 +121,34 @@ static int microm92ci_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 	return 1;
 }
 
-static int readdata(unsigned char *dest, int nbytes)
+static int readdata_with_select(unsigned char *dest, int nbytes)
 {
 	log_debug("m92 readdata");
 	struct timeval timeout;
-	timeout.tv_sec = 10;
+	timeout.tv_sec = 2;
 	timeout.tv_usec = 0;
 	fd_set readfs;
-	FD_SET(drv.fd, &readfs);
 	int maxfd = drv.fd + 1;
-	select(maxfd, &readfs, NULL, NULL, &timeout);
-	int i = read(drv.fd, dest, nbytes);
-	if (i != nbytes) {
-		if (i > 0) {
-			log_error("microm92ci: readdata error: expected %d bytes, but read 1 byte", nbytes);
+	int bytesread = 0;
+	while( bytesread < nbytes ) {
+		FD_SET(drv.fd, &readfs);
+		select(maxfd, &readfs, NULL, NULL, &timeout);
+
+		int i = read(drv.fd, &dest[bytesread], 1);
+		bytesread += i;
+		if (i != 1) {
+			break;
 		}
 	}
-	return i;
+	if (bytesread != nbytes) {
+		log_error("microm92ci: readdata error: expected %d bytes, but read %d bytes", nbytes, bytesread);
+	}
+	return bytesread;
+}
+
+static int readdata(unsigned char *dest, int nbytes)
+{
+	return readdata_with_select( dest, nbytes);
 }
 
 static int microm92ci_init(void)
@@ -210,6 +221,11 @@ static int microm92ci_init(void)
 		microm92ci_deinit();
 		return 0;
 	}
+
+	//joki: this sleep is critical. need to wait some time,
+	// else the uC will not respond. waiting longer is not a problem.
+	usleep(2000);
+
 	crypt_bytes(CMD_CONFIRM_KEYEXCHANGE, buffer, sizeof CMD_CONFIRM_KEYEXCHANGE);
 	//~ log_debug("init: sending key exchange command..");
 	if (!write(drv.fd, buffer, sizeof CMD_CONFIRM_KEYEXCHANGE)) {
@@ -251,7 +267,7 @@ static int microm92ci_init(void)
 		log_trace("m92: tcsetattr() failed");
 		return 0;
 	}
-	
+
 	log_debug("microm92ci: successfully initialized m92");
 	return 1;
 }
@@ -310,7 +326,6 @@ static char* microm92ci_rec(struct ir_remote* remotes)
 	//~ code |= ((ir_code)b[4]);
 	//~ code = code << 8;
 	//~ code |= ((ir_code)b[5]);
-	log_debug("code: %llx", code);
 
 	log_trace("code: %llx", (__u64)code);
 
