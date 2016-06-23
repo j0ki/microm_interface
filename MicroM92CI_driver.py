@@ -133,8 +133,8 @@ class M92CI_IR:
     key_2a = 0x2a
 
 
-    init = init_03
-    self.__key = key_03
+    init = init_01
+    self.__key = key_01
 
     self.senddata_clear(magic)
     self.senddata_clear(init)
@@ -194,9 +194,9 @@ class M92CI_IR:
     cmd_display_dash_dash_dash_dash = b'\x8eA\xd3\xd3\xd3\xd3\x00\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01\x01'
     cmd_display_dash_dash_dash_dash = b'\x8eA\xd3\xd3\xd3\xd3\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
 
-    self.senddata(cmd_display_dash_dash_dash_dash)
-    time.sleep(.5)
+    #~ self.senddata(cmd_display_dash_dash_dash_dash)
+    #~ time.sleep(.5)
     self.senddata(cmd_display_boot)
-    time.sleep(.5)
-    self.senddata(cmd_display_dash_dash_dash_dash)
+    #~ time.sleep(.5)
+    #~ self.senddata(cmd_display_dash_dash_dash_dash)
 
