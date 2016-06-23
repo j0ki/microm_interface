@@ -63,6 +63,7 @@ static int readdata_with_select(unsigned char *dest, int nbytes)
 	int bytesread = 0;
 	while( bytesread < nbytes ) {
 		FD_SET(drv.fd, &readfs);
+		log_debug("microm92ci: waiting for bytes. 2seconds timeout...");
 		select(maxfd, &readfs, NULL, NULL, &timeout);
 
 		int i = read(drv.fd, &dest[bytesread], 1);
@@ -71,15 +72,32 @@ static int readdata_with_select(unsigned char *dest, int nbytes)
 			break;
 		}
 	}
-	if (bytesread != nbytes) {
-		log_error("microm92ci: readdata error: expected %d bytes, but read %d bytes", nbytes, bytesread);
+	return bytesread;
+}
+
+static int readdata_with_blockingread(unsigned char *dest, int nbytes)
+{
+	log_debug("m92 readdata with blocking read");
+	int bytesread = 0;
+	while( bytesread < nbytes ) {
+		log_debug("microm92ci: waiting for bytes. 2seconds timeout...");
+		int i = read(drv.fd, &dest[bytesread], nbytes);
+		bytesread += i;
+		if (i == 0) {
+			break;
+		}
 	}
 	return bytesread;
 }
 
 static int readdata(unsigned char *dest, int nbytes)
 {
-	return readdata_with_select( dest, nbytes);
+	//~ int bytesread = readdata_with_select( dest, nbytes);
+	int bytesread = readdata_with_blockingread( dest, nbytes);
+	if (bytesread != nbytes) {
+		log_error("microm92ci: readdata error: expected %d bytes, but read %d bytes", nbytes, bytesread);
+	}
+	return bytesread;
 }
 
 static int microm92ci_init(void)
@@ -87,28 +105,17 @@ static int microm92ci_init(void)
 	unsigned char buffer[18] = {0};
 	struct termios options;
 	log_debug("m92 init");
-	//~ if (!tty_create_lock(drv.device)) {
-		//~ log_error("microm92ci: could not create lock files");
-		//~ return 0;
-	//~ }
-	log_debug("init: open device..");
-	drv.fd = open(drv.device, O_RDWR | O_NOCTTY | O_NONBLOCK);
-	if (drv.fd < 0) {
-		log_error("microm92ci: could not open %s", drv.device);
-		//~ tty_delete_lock();
+	if (!tty_create_lock(drv.device)) {
+		log_error("microm92ci: could not create lock files");
 		return 0;
 	}
-	//~ if (!tty_reset(drv.fd)) {
-		//~ log_error("microm92ci: could not reset tty");
-		//~ microm92ci_deinit();
-		//~ return 0;
-	//~ }
-	
-	//~ if (!tty_setbaud(drv.fd, 115200)) {
-		//~ log_error("microm92ci: could not set baud rate");
-		//~ microm92ci_deinit();
-		//~ return 0;
-	//~ }
+	log_debug("init: open device..");
+	drv.fd = open(drv.device, O_RDWR | O_NOCTTY);
+	if (drv.fd < 0) {
+		log_error("microm92ci: could not open %s", drv.device);
+		tty_delete_lock();
+		return 0;
+	}
 	if (tcgetattr(drv.fd, &options) == -1) {
 		log_error("m92: tcgetattr() failed");
 		return 0;
@@ -117,7 +124,7 @@ static int microm92ci_init(void)
 	(void)cfsetispeed(&options, B115200);
 	(void)cfsetospeed(&options, B115200);
 	options.c_cflag |= (CLOCAL | CREAD);
-	options.c_cc[VTIME] = 0;
+	options.c_cc[VTIME] = 20;
 	options.c_cc[VMIN]  = 0;
 	if (tcsetattr(drv.fd, TCSAFLUSH, &options) == -1) {
 		log_trace("m92: tcsetattr() failed");
@@ -187,18 +194,6 @@ static int microm92ci_init(void)
 		return 0;
 	}
 
-	// set timeouts for receive mode:
-	if (tcgetattr(drv.fd, &options) == -1) {
-		log_error("m92: tcgetattr() failed");
-		return 0;
-	}
-	options.c_cc[VTIME] = 0;
-	options.c_cc[VMIN]  = 0;
-	if (tcsetattr(drv.fd, TCSAFLUSH, &options) == -1) {
-		log_trace("m92: tcsetattr() failed");
-		return 0;
-	}
-
 	log_debug("microm92ci: successfully initialized m92");
 	return 1;
 }
@@ -215,51 +210,17 @@ static int microm92ci_deinit(void)
 static char* microm92ci_rec(struct ir_remote* remotes)
 {
 	log_debug("m92 rec");
-	int i = read(drv.fd, b, NUMBYTES);
+	int i = readdata(b, NUMBYTES);
 	if (i != NUMBYTES) {
-		if (i > 0) {
-			log_error("microm92ci: receive error: expected 2 bytes, but read 1 byte");
-		}
+		log_error("microm92ci: receive error: expected 2 bytes, but read %d bytes: %02x %02x", NUMBYTES, b[0], b[1]);
 		return NULL;
 	}
-	char* m;
-
-	//~ last = end;
-	//~ gettimeofday(&start, NULL);
-	//~ for (i = 0; i < NUMBYTES; i++) {
-		//~ if (i > 0) {
-			//~ if (!waitfordata(TIMEOUT)) {
-				//~ log_error("microm92ci: timeout reading byte %d", i);
-				//~ return NULL;
-			//~ }
-		//~ }
-		//~ if (read(drv.fd, &b[i], 1) != 1) {
-			//~ log_error("microm92ci: reading of byte %d failed", i);
-			//~ log_perror_err(NULL);
-			//~ return NULL;
-		//~ }
-		//~ log_trace("byte %d: %02x", i, b[i]);
-	//~ }
-	//~ gettimeofday(&end, NULL);
-
-	/* mark as Irman */
-	//~ code = 0xffff;
-	//~ code <<= 16;
 
 	code = ((ir_code)crypt_byte(b[0]));
 	code = code << 8;
 	code |= ((ir_code)crypt_byte(b[1]));
-	//~ code = code << 8;
-	//~ code |= ((ir_code)b[2]);
-	//~ code = code << 8;
-	//~ code |= ((ir_code)b[3]);
-	//~ code = code << 8;
-	//~ code |= ((ir_code)b[4]);
-	//~ code = code << 8;
-	//~ code |= ((ir_code)b[5]);
 
 	log_trace("code: %llx", (__u64)code);
 
-	m = decode_all(remotes);
-	return m;
+	return decode_all(remotes);
 }
