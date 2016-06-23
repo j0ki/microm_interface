@@ -156,12 +156,13 @@ class M92CI_IR:
     self.senddata(cmd)
 
   def generate_keymap(self, keymap=dict()):
-    while True:
+    readanotherkey = True
+    while readanotherkey:
       data = self.readdata(2)
       if len(data) < 2:
         continue
       if data == _CMD_STANDBY_PREFIX:
-        break
+        readanotherkey = False
       keycode = data[1]
       prompt = str(keycode)
       if keycode in keymap:
