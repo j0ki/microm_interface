@@ -16,15 +16,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-//~ void log_debug(char *string){
-	//~ printf(string);
-	//~ printf("\n");
-//~ }
 
-//~ void log_error(char *string){
-	//~ printf(string);
-	//~ printf("\n");
-//~ }
 
 #define log_error (printf)
 #define log_debug (printf)
@@ -90,7 +82,7 @@ static int readdata_with_select(unsigned char *dest, int nbytes)
 	while( bytesread < nbytes ) {
 		FD_SET(drv.fd, &readfs);
 		select(maxfd, &readfs, NULL, NULL, &timeout);
-		
+
 		int i = read(drv.fd, &dest[bytesread], 1);
 		bytesread += i;
 		if (i != 1) {
@@ -181,7 +173,11 @@ static int microm92ci_init(void)
 		microm92ci_deinit();
 		return 0;
 	}
+
+	//joki: this sleep is critical. need to wait some time,
+	// else the uC will not respond. waiting longer is not a problem.
 	usleep(2000);
+
 	crypt_bytes(CMD_CONFIRM_KEYEXCHANGE, buffer, sizeof CMD_CONFIRM_KEYEXCHANGE);
 	//~ log_debug("init: sending key exchange command..");
 	if (!write(drv.fd, buffer, sizeof CMD_CONFIRM_KEYEXCHANGE)) {
@@ -224,7 +220,7 @@ static int microm92ci_init(void)
 		log_error("m92: tcsetattr() failed");
 		return 0;
 	}
-	
+
 	log_debug("microm92ci: successfully initialized m92");
 	return 1;
 }
@@ -234,6 +230,6 @@ int main()
 {
 	//~ drv = hw_microm92ci;
 	drv.device = "/dev/ttyACM0";
-	
+
 	return !microm92ci_init();
 }
