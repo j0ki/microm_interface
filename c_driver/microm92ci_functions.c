@@ -56,7 +56,7 @@ static int readdata_with_select(unsigned char *dest, int nbytes)
 {
 	log_debug("m92 readdata");
 	struct timeval timeout;
-	timeout.tv_sec = 2;
+	timeout.tv_sec = 3;
 	timeout.tv_usec = 0;
 	fd_set readfs;
 	int maxfd = drv.fd + 1;
