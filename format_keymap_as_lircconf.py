@@ -5,7 +5,7 @@ import sys
 import pickle
 
 PRE_CONF = """begin remote
-        name            microremotetest
+        name            Microm
         bits            8
         eps             30
         aeps            100
@@ -13,7 +13,7 @@ PRE_CONF = """begin remote
         pre_data        0x8e
         post_data_bits  0
         post_data       0x0
-        gap             0
+        gap             10000
         toggle_bit      0
 	driver          microm92ci
 
