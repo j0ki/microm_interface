@@ -203,7 +203,7 @@ static int microm92ci_deinit(void)
 	log_debug("m92 deinit");
 	//TODO: put board into standby? no! it should go into standby just before the cpu halts
 	close(drv.fd);
-	//~ tty_delete_lock();
+	tty_delete_lock();
 	return 1;
 }
 
