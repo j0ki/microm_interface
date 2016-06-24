@@ -16,9 +16,6 @@
 #include <sys/types.h>
 #include <termios.h>
 
-
-
-
 #define log_error (printf)
 #define log_debug (printf)
 #define log_trace (printf)
@@ -36,8 +33,6 @@ struct driva drv = {
 	.device = "/dev/ttyACM0"
 };
 
-
-
 #define NUMBYTES 2
 #define TIMEOUT 20000
 
@@ -52,8 +47,6 @@ static const unsigned char CMD_STANDBY_PREFIX[] = {CMD_PREFIX, 0x67};
 static const unsigned char CMD_CONFIRM_KEYEXCHANGE[] = {CMD_PREFIX, 0x08};
 static const unsigned char DISPLAY_INIT[] = "\x13\xe4\x13\x45";
 
-//~ static const logchannel_t logchannel = LOG_DRIVER;
-
 static unsigned char b[NUMBYTES];
 static struct timeval start, end, last;
 typedef unsigned long __u64;
@@ -65,14 +58,9 @@ static int microm92ci_init(void);
 static int microm92ci_deinit(void);
 static char* microm92ci_rec(struct ir_remote* remotes);
 
-
-
 #include "microm92ci_functions.c"
 
 int main()
 {
-	//~ drv = hw_microm92ci;
-	//~ drv.device = "/dev/ttyACM0";
-
 	return !microm92ci_init();
 }
