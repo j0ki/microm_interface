@@ -6,7 +6,7 @@
 # Where are the LIRC sources located (needed for include files only)
 LIRC_SRC=/home/joki/Projects/reverse_dvbc_interface_board/lirc/src/lirc-0.9.4
 # Where are out plugins to be installed
-PLUGINDIR := /home/joki/Projects/reverse_dvbc_interface_board/lirc/src/lirc-0.9.4/plugins/.libs
+PLUGINDIR := /usr/local/lib/lirc/plugins
 
 # Some extra includes and/or libraries might be needed
 #EXTRA_INCLUDES := -I/usr/include/libxml2
