@@ -27,6 +27,9 @@
 *
 */
 
+#ifndef MICROM92CI_H
+#define MICROM92CI_H
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -95,4 +98,4 @@ const struct driver hw_microm92ci = {
 
 const struct driver* hardwares[] = { &hw_microm92ci, (const struct driver*)NULL };
 
-#include "microm92ci_functions.c"
+#endif //MICROM92CI_H
