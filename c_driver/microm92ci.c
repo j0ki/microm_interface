@@ -53,29 +53,6 @@ static int microm92ci_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 	return 1;
 }
 
-static int readdata_with_select(unsigned char *dest, int nbytes)
-{
-	log_debug("m92 readdata");
-	struct timeval timeout;
-	timeout.tv_sec = 3;
-	timeout.tv_usec = 0;
-	fd_set readfs;
-	int maxfd = drv.fd + 1;
-	int bytesread = 0;
-	while( bytesread < nbytes ) {
-		FD_SET(drv.fd, &readfs);
-		log_debug("microm92ci: waiting for bytes. 2seconds timeout...");
-		select(maxfd, &readfs, NULL, NULL, &timeout);
-
-		int i = read(drv.fd, &dest[bytesread], 1);
-		bytesread += i;
-		if (i != 1) {
-			break;
-		}
-	}
-	return bytesread;
-}
-
 static int readdata_with_blockingread(unsigned char *dest, int nbytes)
 {
 	log_debug("m92 readdata with blocking read");
