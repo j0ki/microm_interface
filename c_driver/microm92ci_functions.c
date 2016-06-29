@@ -194,6 +194,16 @@ static int microm92ci_init(void)
 		return 0;
 	}
 
+	//reopen device in read-only mode
+	log_debug("init: reopen device..");
+	close(drv.fd);
+	drv.fd = open(drv.device, O_RDONLY | O_NOCTTY);
+	if (drv.fd < 0) {
+		log_error("microm92ci: could not reopen %s", drv.device);
+		tty_delete_lock();
+		return 0;
+	}
+
 	log_debug("microm92ci: successfully initialized m92");
 	return 1;
 }
