@@ -52,8 +52,8 @@
 
 static const unsigned char MAGIC[] = {0xab, 0xbc, 0xcd, 0xde, 0xea};
 static const unsigned char MASTERKEY[] = {0x0e, 0x0b};
-static const unsigned char INIT[] = {0x0f, 0x06, 0x06, 0x40, 0x90, 0xd0};
-static const unsigned char KEY = 0x03;
+static const unsigned char INIT[] = {0x06, 0x05, 0x04, 0xc0, 0x10, 0x00};
+static const unsigned char KEY = 0x01;
 
 #define CMD_PREFIX 0x8e
 static const unsigned char CMD_DISPLAY_PREFIX[] = {CMD_PREFIX, 0x41};
