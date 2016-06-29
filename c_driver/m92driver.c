@@ -57,6 +57,8 @@ static int microm92ci_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 static int microm92ci_init(void);
 static int microm92ci_deinit(void);
 static char* microm92ci_rec(struct ir_remote* remotes);
+static int tty_create_lock() {return 1;};
+static int tty_delete_lock() {return 1;};
 
 #include "microm92ci_functions.c"
 
