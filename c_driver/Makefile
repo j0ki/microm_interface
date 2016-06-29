@@ -22,14 +22,14 @@ CC := gcc
 CPP := g++
 
 # Rule for compiling C
-%.so: %.c microm92ci_functions.c
+%.so: %.c microm92ci.h
 	$(CC)  $(WARNINGS) $(INCLUDE) $(MACHINE) $(OPTIMIZE) $(DEBUG) $(SHARED) -o $@ $< $(EXTRA_LIBS)
 
 # Rule for compiling C++
 %.so: %.cpp
 	$(CPP) $(WARNINGS) $(INCLUDE) $(MACHINE) $(OPTIMIZE) $(DEBUG) $(SHARED) -o $@ $< $(EXTRA_LIBS)
 
-m92driver: m92driver.c microm92ci_functions.c
+m92driver: m92driver.c microm92ci.c
 	$(CC) $(WARNINGS) $(INCLUDE) $(MACHINE) $(OPTIMIZE) $(DEBUG)  -o $@ $< $(EXTRA_LIBS)
 
 main: m92driver
