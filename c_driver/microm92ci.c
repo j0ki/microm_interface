@@ -48,7 +48,6 @@
 #include "lirc/serial.h"
 
 #define NUMBYTES 2
-#define TIMEOUT 20000
 
 static const unsigned char MAGIC[] = {0xab, 0xbc, 0xcd, 0xde, 0xea};
 static const unsigned char MASTERKEY[] = {0x0e, 0x0b};
