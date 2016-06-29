@@ -124,6 +124,7 @@ static int microm92ci_init(void)
 	(void)cfsetispeed(&options, B115200);
 	(void)cfsetospeed(&options, B115200);
 	options.c_cflag |= (CLOCAL | CREAD);
+	//read timeout: 2 seconds
 	options.c_cc[VTIME] = 20;
 	options.c_cc[VMIN]  = 0;
 	if (tcsetattr(drv.fd, TCSAFLUSH, &options) == -1) {
