@@ -27,7 +27,7 @@
 *
 */
 
-#include "microm92ci.c"
+#include "microm92ci.h"
 
 static unsigned char crypt_byte(unsigned char byte)
 {
