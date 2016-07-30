@@ -59,7 +59,7 @@ static int readdata_with_blockingread(unsigned char *dest, int nbytes)
 	int bytesread = 0;
 	while( bytesread < nbytes ) {
 		log_debug("microm92ci: waiting for bytes. 2seconds timeout...");
-		int i = read(drv.fd, &dest[bytesread], nbytes);
+		int i = read(drv.fd, &dest[bytesread], nbytes - bytesread);
 		bytesread += i;
 		if (i == 0) {
 			break;
