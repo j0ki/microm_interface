@@ -45,9 +45,12 @@ static int microm92ci_decode(struct ir_remote* remote, struct decode_ctx_t* ctx)
 {
 	log_debug("m92 decode");
 	//ctx->repeat_flag = (code == 0x8efe) ? 1 : 0;
+	// 8 bits prefix, 8 bits data, 0 bits suffix
 	if (!map_code(remote, ctx, 0, 0, 8 * NUMBYTES, code, 0, 0))
 		return 0;
 
+	ctx->min_remaining_gap = min_gap(remote);
+	ctx->max_remaining_gap = max_gap(remote);
 	//map_gap(remote, ctx, &start, &last, 0);
 
 	return 1;
