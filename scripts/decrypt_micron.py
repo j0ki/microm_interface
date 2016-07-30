@@ -41,24 +41,3 @@ while True:
   else:
     output.write(decrypt(data[:1], key))
     data = data[1:]
-
-
-#~ key = int(sys.argv[2], 16)
-
-#~ for line in open(sys.argv[1]):
-  #~ line = line.split("\n")[0]
-  #~ if line:
-    #~ if line.startswith("Host   --> "):
-      #~ print("Host   --> ")
-      #~ line = line[11:]
-    #~ if line.startswith("Device --> "):
-      #~ print("Device --> ")
-      #~ line = line[11:]
-    #~ if not line.startswith("==>"):
-      #~ print("  " + line)
-      #~ bytes = line.split(" ")
-      #~ bytes = [int(x,16) for x in bytes]
-      #~ bytes = [x ^ key for x in bytes]
-      #~ bytes = ["{:02x}".format(x, "x") for x in bytes]
-      #~ line = "~>" + " ".join(bytes)
-    #~ print(line)
