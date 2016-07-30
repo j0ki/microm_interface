@@ -1,0 +1,39 @@
+
+
+Host   --> ab bc cd de ea
+
+Host   --> 03 27 05 70 b0 c0
+
+Device --> f3 f5 22 91 57 14
+
+Host   --> 24 21
+
+Device --> a4 b6 03
+
+Host   --> a4 22
+
+Host   --> a4 eb 08 de de 6d be ce 5e 2a 2a 2a 2a 2a 2a 2a 2a 2a
+
+Host   --> a4 eb 08 de de 6d be ce 5e 2a 2a 2a 2a 2a 2a 2a 2a 2a
+
+Host   --> ab bc cd de ea
+
+Host   --> 03 01 01 00 50 f0
+
+Host   --> c9 cc
+
+Device --> 2d 5a f6 b5 48 49
+
+Host   --> 49 cf
+
+Device --> 49 5b ee
+
+Host   --> 49 86 14 14 14 14 c7 c6 c6 c6 c6 c6 c6 c6 c6 c6 c6 c6 c6 c6
+
+Host   --> 49 86 c4 c4 c4 d4 c7 c6 c6 c6 c6 c6 c6 c6 c6 c6 c6 c6 c6 c6
+
+Device --> 49 e6
+
+Host   --> 49 86 c4 c4 c4 e4 c7 c6 c6 c6 c6 c6 c6 c6
+
+Host   --> c6 c6 c6 c6 c6 c6

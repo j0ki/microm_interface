@@ -1,0 +1,48 @@
+Started logging raw data from host into file 'standby_wakeup_3.dat'.
+
+
+Device --> bc 55
+
+Host   --> bc 73 07 77 10 71 32 33 33 33 33 33 33 33 33 33 33 33 33 33
+
+Host   --> bc 55 32 32 32 32 32 32 32 31 21 31 31
+
+Device --> 00
+
+Host   --> 67 32 32 32 32 00
+
+Host   --> ab bc cd de ea
+
+Host   --> 04 02 00 b0 f0 20
+
+Device --> 2b f1 2e ef 01 e3
+
+Host   --> 31 34
+
+Host   --> b1 37 b1 fe 1d cb cb 78 ab db 4b
+
+Device --> b1 a3 16
+
+Host   --> 3f 3f 3f 3f 3f 3f 3f 3f 3f
+
+Host   --> b1 fe 1d cb cb 78 ab db 4b 3f 3f 3f 3f 3f 3f 3f 3f 3f
+
+Host   --> ab bc cd de ea
+
+Host   --> 0d 27 06 c0
+
+Host   --> 10 c0
+
+Device --> 98 ff ec 69 ee 8f
+
+Host   --> 67 62
+
+Host   --> e7 61
+
+Device --> e7 f5 40
+
+Host   --> e7 28 ba ba ba ba 69 68 68 68 68 68 68 68 68 68 68 68 68 68
+
+Host   --> e7 28 6a 6a 4a 6a 69 68 68 68 68 68 68 68 68 68
+
+Host   --> 68 68 68 68

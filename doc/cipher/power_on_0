@@ -1,0 +1,43 @@
+
+
+Host   --> ab bc cd de ea
+
+Host   --> 03 27 05 70 b0 c0
+
+Device --> 64 f5 26 9c 57 c5
+
+Host   --> 24 21
+
+Host   --> a4 22 a4 eb 08 de de 6d be
+
+Device --> a4 b6 03
+
+Host   --> ce 5e 2a 2a 2a 2a 2a 2a 2a 2a 2a
+
+Host   --> a4 eb 08 de de 6d be ce 5e 2a 2a 2a 2a 2a 2a 2a 2a 2a
+
+Host   --> ab bc cd de ea
+
+Host   --> 04 23 03 40 90 10
+
+Device --> e2 ae 56 36
+
+Host   --> 85 80
+
+Device --> 4d 5d
+
+Host   --> 05 83
+
+Device --> 05 17 a2
+
+Host   --> 05 ca 58 58 58 58 8b 8a 8a 8a 8a 8a 8a 8a 8a 8a 8a 8a
+
+Host   --> 8a 8a
+
+Host   --> 05 ca 88 d8 d8 d8 8b 8a 8a 8a 8a 8a
+
+Host   --> 8a 8a 8a 8a 8a 8a 8a 8a
+
+Device --> 05 9a
+
+Host   --> 05 ca 88 88 88 98 8b 8a 8a 8a 8a 8a 8a 8a 8a 8a 8a 8a 8a 8a

@@ -1,0 +1,36 @@
+Started logging raw data from host into file 'power_on_9.dat'.
+
+
+Host   --> ab bc cd de ea
+
+Host   --> 04 13 00 f0 30 30
+
+Device --> 18 aa 99 cf 09 da
+
+Host   --> f6 f3
+
+Device --> 76 64 d1
+
+Host   --> 76 f0 76 39 da 0c 0c bf 6c 1c 8c f8 f8 f8 f8 f8 f8 f8 f8 f8
+
+Host   --> 76 39 da 0c 0c bf 6c 1c 8c f8 f8 f8 f8 f8 f8 f8 f8
+
+Host   --> f8
+
+Host   --> ab bc cd de
+
+Host   --> ea
+
+Device --> dc 86 f3 4b b4 a4
+
+Host   --> 00 20 08 00 50 f0 34 31
+
+Device --> b4 a6 13
+
+Host   --> b4 32
+
+Host   --> b4 7b e9
+
+Host   --> e9 e9 e9 3a 3b 3b 3b 3b 3b 3b 3b 3b 3b 3b 3b 3b 3b
+
+Host   --> b4 7b 39 39 19 39 3a 3b 3b 3b 3b 3b 3b 3b 3b 3b 3b 3b 3b 3b

@@ -1,0 +1,51 @@
+
+
+Device --> b4 5d
+
+Host   --> b4 7b 0f
+
+Host   --> 7f 18 79 3a 3b 3b 3b 3b 3b 3b 3b 3b 3b 3b 3b 3b 3b
+
+Host   --> b4 5d 3a 3a 3a 3a 3a 3a 3a 39 09 29 19 aa 3a 3a 3a 3a 00
+
+Device --> 00
+
+Host   --> 00
+
+Host   --> ab bc cd de ea
+
+Host   --> 04 13 00 f0 30 30
+
+Device --> f6 a6 9b
+
+Host   --> f6 f3
+
+Device --> c3 06 36
+
+Device --> 76 64 d1
+
+Host   --> 76 f0 76 39 da 0c 0c bf 6c 1c 8c f8 f8 f8 f8 f8 f8 f8 f8 f8
+
+Host   --> 76 39 da 0c 0c bf 6c 1c 8c f8 f8 f8 f8 f8 f8 f8 f8
+
+Host   --> f8
+
+Host   --> ab bc cd de ea
+
+Host   --> 06 16 06 80 d0 10
+
+Device --> 4d f2 f0 b6 e2 70
+
+Host   --> 66 63
+
+Device --> e6 f4 41
+
+Host   --> e6 60
+
+Host   --> e6 29 bb bb bb bb 68 69 69 69 69 69 69 69 69
+
+Host   --> 69 69 69 69 69
+
+Host   --> e6 29 6b 6b 4b 6b
+
+Host   --> 68 69 69 69 69 69 69 69 69 69 69 69 69 69
