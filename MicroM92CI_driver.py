@@ -13,7 +13,6 @@ _CMD_DISPLAY_PREFIX      = _CMD_PREFIX + bytes([0x41])
 _CMD_STANDBY_PREFIX      = _CMD_PREFIX + bytes([0x67])
 _CMD_CONFIRM_KEYEXCHANGE = _CMD_PREFIX + bytes([0x08])
 
-
 def _blob_to_hex(bytestring):
   return " ".join("{:02x}".format(c) for c in bytestring)
 
@@ -91,6 +90,9 @@ class M92CI_IR:
         print("<== " + _blob_to_hex(data))
     return data
 
+  def reset_input_buffer(self):
+    self.__ser.reset_input_buffer()
+
   def readdata(self, n):
     data = self.__ser.read(n)
     if data:
@@ -110,7 +112,7 @@ class M92CI_IR:
     packet = self.crypt_list_8bit(packet)
     self.__ser.write(packet)
 
-  def __init__(self, port, timeout=2, verbose=False):
+  def __init__(self, port, timeout=2, write_only=False, verbose=False):
     self.__ser = serial.Serial(port=port, baudrate=115200, timeout=timeout)
 
     self.verbose = verbose
